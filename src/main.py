@@ -6,52 +6,11 @@ from datetime import date, timedelta
 import os
 import uuid
 from termcolor import cprint
-
-
-alphabet = {
-    "A": [[2], [1, 3], [1, 2, 3], [0, 1, 3, 4], [0, 4]],
-    "B": [[0, 1, 2, 3], [0, 3, 4], [0, 1, 2, 3], [0, 3, 4], [0, 1, 2, 3]],
-    "C": [[0, 1, 2, 3, 4], [0], [0], [0], [0, 1, 2, 3, 4]],
-    "D": [[0, 1], [0, 2], [0, 3], [0, 4], [0, 1, 2, 3, 4]],
-    "E": [[0, 1, 2, 3, 4], [0], [0, 1, 2, 3, 4], [0], [0, 1, 2, 3, 4]],
-    "F": [[0, 1, 2, 3, 4], [0], [0, 1, 2, 3, 4], [0], [0]],
-    "G": [[0, 1, 2, 3, 4], [0], [0, 3, 4], [0, 4], [0, 1, 2, 3, 4]],
-    "H": [[0, 4], [0, 4], [0, 1, 2, 3, 4], [0, 4], [0, 4]],
-    "I": [[0, 1, 2], [1], [1], [1], [0, 1, 2]],
-    "J": [[4], [4], [4], [0, 4], [0, 1, 2, 3, 4]],
-    "K": [[0, 4], [0, 3], [0, 1, 2], [0, 3], [0, 4]],
-    "L": [[0], [0], [0], [0], [0, 1, 2, 3, 4]],
-    "M": [[0, 4], [0, 1, 3, 4], [0, 2, 4], [0, 4], [0, 4]],
-    "N": [[0, 4], [0, 1, 4], [0, 2, 4], [0, 3, 4], [0, 4]],
-    "O": [[0, 1, 2, 3, 4], [0, 4], [0, 4], [0, 4], [0, 1, 2, 3, 4]],
-    "P": [[0, 1, 2, 3, 4], [0, 4], [0, 1, 2, 3, 4], [0], [0]],
-    "Q": [[0, 1, 2, 3, 4], [0, 4], [0, 4], [0, 4], [0, 1, 2, 3], [2, 3, 4]],
-    "R": [[0, 1, 2, 3, 4], [0, 4], [0, 1, 2, 3, 4], [0, 3], [0, 4]],
-    "S": [[1, 2, 3, 4], [0], [1, 2, 3], [4], [0, 1, 2, 3]],
-    "T": [[0, 1, 2, 3, 4], [2], [2], [2], [2]],
-    "U": [[0, 4], [0, 4], [0, 4], [0, 4], [0, 1, 2, 3, 4]],
-    "V": [[0, 4], [0, 4], [1, 3], [1, 3], [2]],
-    "W": [[0, 4], [0, 4], [0, 2, 4], [0, 1, 3, 4], [0, 4]],
-    "X": [[0, 4], [1, 3], [2], [1, 3], [0, 4]],
-    "Y": [[0, 4], [1, 3], [2], [2], [2]],
-    "Z": [[0, 1, 2, 3, 4], [3], [2], [1], [0, 1, 2, 3, 4]],
-    "0": [[1, 2], [0, 3], [0, 3], [0, 3], [1, 2]],
-    "1": [[0], [0], [0], [0], [0]],
-    "2": [[0, 1, 2], [3], [1, 2], [0], [1, 2, 3]],
-    "3": [[0, 1, 2], [3], [0, 1, 2], [3], [0, 1, 2]],
-    "4": [[0, 3], [0, 3], [0, 1, 2, 3], [3], [3]],
-    "5": [[0, 1, 2, 3], [0], [0, 1, 2], [3], [0, 1, 2]],
-    "6": [[1, 2, 3], [0], [0, 1, 2], [0, 3], [1, 2]],
-    "7": [[0, 1, 2, 3], [2], [2], [1], [1]],
-    "8": [[1, 2], [0, 3], [1, 2], [0, 3], [1, 2]],
-    "9": [[1, 2], [0, 3], [1, 2, 3], [3], [1, 2]],
-    "^": [[0, 2, 3, 4], [0, 2], [0, 1, 2, 3, 4], [2, 4], [0, 1, 2, 4]],
-    " ": []
-}
+from alphabet import alphabet
 
 
 def letter_width(letter):
-    return 0 if len(letter) == 0 else max([max(row) for row in letter]) + 1
+    return 0 if len(letter) == 0 else max([max(row) if len(row) else 0 for row in letter]) + 1
 
 
 def get_coordinates_for_word(word):
@@ -113,10 +72,12 @@ def push_repo(repo):
 
 
 def write_word(word, origin, username, email):
-    cprint("Initializing repo ...", "red")
-    repo = init_repo(origin, username, email)
+    check_word(word)
     coords = get_coordinates_for_word(word)
     dates = transform_coordinates_to_dates(coords)
+
+    cprint("Initializing repo ...", "red")
+    repo = init_repo(origin, username, email)
     cprint("Making commits ...", "red")
     [make_commit_on_date(repo, str(commit_date)) for commit_date in dates]
     cprint("Pushing commits ...", "red")
@@ -131,14 +92,16 @@ def check_word(word):
 def do_everything():
     print("Input word: ", end="")
     word = input().strip()
-    check_word(word)
     print("Input origin (repo url): ", end="")
     origin = input().strip()
     print("Input gh username: ", end="")
     username = input().strip()
     print("Input gh email: ", end="")
     email = input().strip()
-    write_word(word, origin, username, email)
+    try:
+        write_word(word, origin, username, email)
+    except Exception as ex:
+        cprint(str(ex), "red")
 
 
 do_everything()
