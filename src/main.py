@@ -22,7 +22,7 @@ def get_coordinates_for_word(word):
     word_width = sum(letter_widths) + space_width * (len(word) - 1)
     x_border = (width - word_width) // 2
 
-    if x_border <= 0:
+    if x_border < 0:
         raise Exception("word is too big")
 
     coordinates = []
@@ -31,7 +31,7 @@ def get_coordinates_for_word(word):
         letter_height = len(alphabet[word[i]])
         letter_shift_y = math.ceil((height - letter_height) / 2)
 
-        if letter_shift_y <= 0:
+        if letter_shift_y < 0:
             raise Exception("letter is too big")
 
         for dy in range(0, letter_height):
@@ -41,8 +41,9 @@ def get_coordinates_for_word(word):
 
 
 def transform_coordinates_to_dates(coordinates):
-    start = date.today() - timedelta(days=date.today().weekday())
-    start = start.replace(year=start.year - 1)
+    start = date.today()
+    start -= timedelta(days=(date.today().weekday() + 1) % 7)  # +1 because in gh week starts from sunday
+    start -= timedelta(days=52 * 7)
     return [start + timedelta(days=7 * x + y) for x, y in coordinates]
 
 
